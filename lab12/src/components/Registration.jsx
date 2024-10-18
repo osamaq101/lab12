@@ -1,16 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Registration.css';
 
-const StudentRegistration = () => {
-    const [students, setStudents] = useState([
-        { id: 116257, name: 'Anna Smith', program: 'MBA' },
-        { id: 615789, name: 'John Doe', program: 'Compro' },
-        { id: 116868, name: 'Tom Jerryh', program: 'MBA' },
-    ]);
 
+const StudentRegistration = () => {
+    //const [students, setStudents] = useState([
+    //    { id: 116257, name: 'Anna Smith', program: 'MBA' },
+    //    { id: 615789, name: 'John Doe', program: 'Compro' },
+    //    { id: 116868, name: 'Tom Jerryh', program: 'MBA' },
+    //]);
+
+    //const [students, setStudents] = useState([]);
+    const [students, setStudents] = useState([]);
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [program, setProgram] = useState('');
+
+    useEffect(() => {
+        const fetchStudents = async () => {
+            try {
+                const response = await fetch('http://localhost:3000/students');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                setStudents(data);
+            } catch (error) {
+                console.error('Error fetching student data:', error);
+            }
+        };
+
+        fetchStudents();
+    }, []);
+
+    const handleDelete = async (studentId) => {
+        try {
+            const response = await fetch(`http://localhost:3000/students/deleteStudentById/${studentId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+               
+                setStudents(students.filter(student => student.id !== studentId));
+            } else {
+                console.error('Failed to delete student');
+            }
+        } catch (error) {
+            console.error('Error deleting student:', error);
+        }
+    };
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -88,6 +126,7 @@ const StudentRegistration = () => {
                             <td>{student.id}</td>
                             <td>{student.name}</td>
                             <td>{student.program}</td>
+                            <td><button className="delete-btn" onClick={() => handleDelete(student.id)} > Delete</button></td>
                         </tr>
                     ))}
                 </tbody>
